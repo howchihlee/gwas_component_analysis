@@ -1,12 +1,4 @@
-library(foreach)
-library(doParallel)
-library(parallel)
-
-args = commandArgs(trailingOnly=TRUE)
-
-numCores <- detectCores()
-cl <- makeCluster(10)
-registerDoParallel(cl)
+args = commandArgs(trailingOnly = TRUE)
 
 fn_exp = args[1] # '../processed_data/transposed_expression/Adipose_experssion.txt'
 fn_covariate = args[2] #'../processed_data/transposed_covariate/Adipose_covariate.txt'
@@ -26,43 +18,16 @@ df_expr <- read.table(fn_exp, header = T, row.names = 1, sep = ',')
 df_cov <- read.table(fn_covariate, header = TRUE, row.names = 1, sep = ',')
 
 
-drop_axis = c()
-
-df_cov$gender = as.factor(df_cov$gender)
-## drop sex if there is only one level
-if (nlevels(df_cov$gender) < 2){
-drop_axis = cbind(drop_axis, c("gender"))
-}
-
-df_cov$Platform = as.factor(df_cov$Platform)
-
-## drop platform if there is only one level
-if (nlevels(df_cov$Platform) < 2){
-drop_axis = cbind(drop_axis, c("Platform"))
-}
-
-df_cov = df_cov[,!(names(df_cov) %in% drop_axis)]
 
 n_genes = ncol(df_expr)
 n_sample = nrow(df_expr)
 
 
-#for (i in 1:n_genes){
-#  expression_vec <- df_expr[ ,i]
-#  adj_expression <- adjust_for_covariates(expression_vec, df_cov)
-#  res[, i] <- adj_expression
-#}
-
-processInput <- function(i) {
+res = matrix(0, n_sample, n_genes)
+for (i in 1:n_genes){
   expression_vec <- df_expr[ ,i]
   adj_expression <- adjust_for_covariates(expression_vec, df_cov)
-  adj_expression
-}
- 
-inputs = 1:n_genes
-
-res <- foreach(i=inputs) %dopar% {
-  processInput(i)
+  res[, i] <- adj_expression
 }
 
 
