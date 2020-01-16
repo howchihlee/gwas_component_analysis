@@ -133,7 +133,7 @@ class Coexpression_Model():
         
         res_all = []
         for i in self.adj_asso_components:
-            k, pca_genes, _, _ = self.pca_models[i][1]
+            k, pca_genes, _, _ = self.pca_models[i]
             res_all += [(k, pca_genes)]
         return res_all   
         
